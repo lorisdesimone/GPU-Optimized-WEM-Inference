@@ -63,14 +63,49 @@ Install them with:
 pip install -r requirements.txt
 ```
 
+---
+
 ## Starting JupyterLab from the Virtual Environment (Windows)
 
-To start JupyterLab inside your virtual environment on Windows, 
-use the provided script: `launchOnWindows.bat`
+To start JupyterLab inside your virtual environment on Windows,
+use the provided script included in this repository `launchOnWindows.bat`.
 
+### How to use it
 
+1. Open a terminal inside the directory of your virtual environment 
+(the one containing the `Scripts/` folder). Run the command:
+2. Run the script:
+```cmd
+launchOnWindows.bat
+```
+This script automatically activates the virtual environment 
+and launches JupyterLab using the packages installed inside it.
 
+---
 
+## Starting JupyterLab from the Virtual Environment (Linux/macOS)
+
+To start JupyterLab inside your virtual environment on Linux or macOS, 
+use the provided script included in this repository: `launchOnLinux.sh`
+
+### How to use it
+
+1. Open a terminal inside the directory of your virtual environment  
+(the one containing the bin/ folder and the launchOnLinux.sh script).
+2. Make the script executable if not yet:
+
+```bash
+chmod +x launchOnLinux.sh
+```
+
+Then run it:
+
+```bash
+./launchOnLinux.sh
+```
+
+This script activates the virtual environment and starts JupyterLab 
+with the environment’s installed packages.
 
 
 
