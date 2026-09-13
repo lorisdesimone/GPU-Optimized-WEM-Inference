@@ -55,6 +55,7 @@ The project requires only two Python packages:
 ```
 numpy
 cupy-cuda12x
+jupyterlab
 ```
 
 Install them with:
