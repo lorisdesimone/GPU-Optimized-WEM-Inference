@@ -1,3 +1,3 @@
 @echo off
-call "%CD%\Scripts\activate.bat"
+call ".venv\Scripts\activate.bat"
 jupyter lab

@@ -1,3 +1,3 @@
 #!/bin/bash
-source "$(pwd)/bin/activate"
+source ".venv/bin/activate"
 jupyter lab

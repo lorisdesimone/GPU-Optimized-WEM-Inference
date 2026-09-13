@@ -50,18 +50,19 @@ source .venv/bin/activate
 
 ### 3. Install Python dependences
 
-The project requires only two Python packages:
-
-```
-numpy
-cupy-cuda12x
-jupyterlab
-```
-
-Install them with:
+Install the required dependencies running inside the environment:
 
 ```bash
 pip install -r requirements.txt
+```
+
+This project uses the modern src layout, meaning that the actual Python package lives inside the src/ directory.
+Because of this, Python will not automatically discover the package unless it is installed.
+
+To make the package importable during development, you must install it in editable mode:
+
+```bash
+pip install -e .
 ```
 
 ---
