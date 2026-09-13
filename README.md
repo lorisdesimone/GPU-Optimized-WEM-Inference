@@ -107,6 +107,14 @@ Then run it:
 This script activates the virtual environment and starts JupyterLab 
 with the environment’s installed packages.
 
+## Windows Defender Notice
+
+If you are running DSInference on Windows, it is recommended to add the
+project directory, the virtual environment directory, and the CuPy cache
+directory to Windows Defender exclusions. CuPy generates CUDA kernels,
+temporary binaries, and cache files that may be scanned or blocked by
+the antivirus, causing slowdowns or execution errors.
+
 
 
 
