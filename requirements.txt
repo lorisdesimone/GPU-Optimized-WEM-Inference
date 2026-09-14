@@ -3,3 +3,4 @@ cupy-cuda12x
 jupyterlab
 scipy
 scikit-learn
+pandas

@@ -727,7 +727,7 @@ class DSregressor:
                 "\n"
             )
 
-        return 
+        return global_optimization_time, first_step_time, second_step_time, mean_training_time
 
 
 
