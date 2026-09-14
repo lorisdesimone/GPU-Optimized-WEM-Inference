@@ -546,7 +546,8 @@ class DSregressor:
 
         # Time steps update
         def time_update(start, end):
-            training_time += end - start
+            nonlocal training_time, train_step_count
+            training_time += (end - start)
             train_step_count += 1
             
         # Default values from object attributes
@@ -566,14 +567,14 @@ class DSregressor:
                     _skip_validate=True,
                     ):
 
-            start = time.perf_counter()
+            start = time.time()
             
             self.fit(df_train,
                     n_of_sets=n_sets_to_try,
                     _skip_validate=_skip_validate
                     )
             
-            end = time.perf_counter()
+            end = time.time()
             time_update(start, end)
             
     
@@ -588,14 +589,14 @@ class DSregressor:
             print((f"New best score with n_of_sets: {n_of_sets_new} -> Scored: {new_score}"))
 
         # First fit
-        start = time.perf_counter()
+        start = time.time()
         
         self.fit(df_train,
                 domains_functions_list=domains_functions_list,
                 n_of_sets=n_of_sets,
                 )
         
-        end = time.perf_counter()
+        end = time.time()
         time_update(start, end)
         
         # Setting first score

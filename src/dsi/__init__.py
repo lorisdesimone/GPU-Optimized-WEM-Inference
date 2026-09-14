@@ -1,5 +1,5 @@
 # Backend
-from .backend import xp
+from .backend import xp, is_gpu_backend
 
 # Regrression methods
 from .regressors import DSregressor
