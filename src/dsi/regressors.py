@@ -1,7 +1,8 @@
 import warnings
+import time  
 from .backend import xp
 from .fuzzysets import triang_fs
-from .scores import mixed_metric
+from .metrics import mixed_metric
 from .domainDivision import density_div, linear_div, unique_div
 
 # --- Class
@@ -33,12 +34,14 @@ class DSregressor:
             If False, conflicts are resolved by selecting the rule with the
             highest firing degree (classical Wang & Mendel behavior).
     
-        default_division : {"D", "L"}, optional
-            Default domain division strategy for continuous features.
-            - "D": density‑based partitioning, where fuzzy sets are allocated 
-            according to the empirical density of the training data.
-            - "L": linear partitioning, where fuzzy sets are uniformly spaced
-              across the feature range. Used when DB is disabled.
+        default_division : str or list, optional
+            Either a single letter ('D', 'L', 'U') broadcasted to all features,
+            or a list specifying the division type per feature. 
+            Elements may be:
+                - 'D' : density-based division
+                - 'L' : linear division
+                - 'U' : unique-value division
+                - numeric lists : strictly increasing unique values defining custom pivots
     
         default_n_of_sets : int, optional
             Initial number of fuzzy sets per feature before cross‑validation.
@@ -279,11 +282,12 @@ class DSregressor:
         ----------
         domain_div_test : str or list
             Either a single letter ('D', 'L', 'U') broadcasted to all features,
-            or a list specifying the division type per feature. Elements may be:
-            - 'D' : density-based division
-            - 'L' : linear division
-            - 'U' : unique-value division
-            - numeric lists : strictly increasing unique values defining custom pivots
+            or a list specifying the division type per feature. 
+            Elements may be:
+                - 'D' : density-based division
+                - 'L' : linear division
+                - 'U' : unique-value division
+                - numeric lists : strictly increasing unique values defining custom pivots
         n_columns : int
             Number of columns (features + output).
     
@@ -535,7 +539,16 @@ class DSregressor:
         best_score : float
             Best validation score obtained.
         """
-        
+
+        # Time statistics init
+        training_time = 0
+        train_step_count = 0
+
+        # Time steps update
+        def time_update(start, end):
+            training_time += end - start
+            train_step_count += 1
+            
         # Default values from object attributes
         if domains_functions_list is None:
             domains_functions_list = self.default_division
@@ -552,11 +565,17 @@ class DSregressor:
         def evaluate(n_sets_to_try, 
                     _skip_validate=True,
                     ):
+
+            start = time.perf_counter()
             
             self.fit(df_train,
                     n_of_sets=n_sets_to_try,
                     _skip_validate=_skip_validate
                     )
+            
+            end = time.perf_counter()
+            time_update(start, end)
+            
     
             y_pred = self.predict(df_val[:, :-1])
             y_true = df_val[:, -1]
@@ -569,10 +588,15 @@ class DSregressor:
             print((f"New best score with n_of_sets: {n_of_sets_new} -> Scored: {new_score}"))
 
         # First fit
+        start = time.perf_counter()
+        
         self.fit(df_train,
                 domains_functions_list=domains_functions_list,
                 n_of_sets=n_of_sets,
                 )
+        
+        end = time.perf_counter()
+        time_update(start, end)
         
         # Setting first score
         y_pred = self.predict(df_val[:, :-1])
@@ -589,6 +613,8 @@ class DSregressor:
         
         # Mask out where type don't need to be modified
         mask = xp.asarray([1 if dt in ("L", "D") else 0 for dt in self.domain_type_list])
+
+        first_step_start_time = time.time()
         
         while improved_global:
             
@@ -633,7 +659,9 @@ class DSregressor:
 
         if print_log:
             print("|--------> Starting Coordinate-wise Optimization ")
-       
+
+        second_step_start_time = time.time()
+        
         while improved:
             
             improved = False
@@ -681,16 +709,25 @@ class DSregressor:
                  n_of_sets=self.n_of_sets,
                  _skip_validate=True)
 
+        global_ending_time = time.time()
+
+        # Time statistics
+        first_step_time = second_step_start_time - first_step_start_time
+        second_step_time = global_ending_time - second_step_start_time
+        global_optimization_time = first_step_time + second_step_time
+        mean_training_time = training_time/train_step_count
+        
         print(
                 "|" + "----"*3 + "> Cross-validation ended succesfully:" +
                 "\n|" + "----"*3 + f"> {self.n_of_sets} -> Best number of set per feature" +
                 "\n|" + "----"*3 + f"> {best_score} -> Best score: {test} metric multiplied by coverage" +
+                "\n|" + "----"*3 + f"> {global_optimization_time}s -> Optimization total time, of wich" +
+                "\n|" + "----"*3 + f"> {first_step_time}s -> First step and {second_step_time}s -> Second step " +
+                "\n|" + "----"*3 + f"> {mean_training_time}s -> Mean training time for different configuration. " +
                 "\n"
             )
 
-
-
-
+        return 
 
 
 

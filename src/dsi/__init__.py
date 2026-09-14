@@ -8,7 +8,7 @@ from .regressors import DSregressor
 from .fuzzysets import triang_fs
 
 # Regression scores
-from .scores import mse, r2, mixed_metric
+from .metrics import mse, r2, mixed_metric, mae, rmse
 
 # Domain division
 from .domainDivision import density_div, linear_div, unique_div

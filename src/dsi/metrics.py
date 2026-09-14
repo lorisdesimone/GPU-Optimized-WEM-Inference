@@ -49,3 +49,27 @@ def mixed_metric(y_pred, y_true, metric="r2"):
 
     else:
         raise ValueError("metric must be 'r2' or 'mse'")
+
+#-------------------------------------------------------
+
+def mae(y_pred, y_true):
+    """
+    Mean Absolute Error
+    """
+    y_pred = xp.asarray(y_pred)
+    y_true = xp.asarray(y_true)
+    
+    return xp.mean(xp.abs(y_pred - y_true))
+
+
+def rmse(y_pred, y_true):
+    """
+    Root Mean Squared Error
+    """
+    
+    return xp.sqrt(mse(y_pred, y_true))
+
+
+
+
+
