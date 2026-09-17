@@ -86,13 +86,70 @@ def split_convert_dataset(df, shuffle=True):
     return train_arr, val_arr, test_arr
 
 
+def handle_numeric_nan(df):
+    """
+    Checks numeric columns for NaN values and asks the user how to handle them.
+    Options:
+        A: Remove numeric columns containing NaN
+        B: Remove rows containing NaN
+        C: Abort the regression algorithm
+    Returns:
+        A cleaned DataFrame or raises an exception.
+    """
+
+    # Identify numeric columns
+    numeric_cols = df.select_dtypes(include=[np.number]).columns
+
+    # Find numeric columns containing NaN
+    nan_cols = [col for col in numeric_cols if df[col].isna().any()]
+
+    # If no NaN, return immediately
+    if not nan_cols:
+        return df
+
+    # Inform the user
+    print("\nWarning: Numeric columns contain NaN values:")
+    print(f"   → {nan_cols}\n")
+
+    print("Choose how to handle NaN values:")
+    print("A: Remove numeric columns containing NaN")
+    print("B: Remove rows containing NaN")
+    print("C: Abort the regression algorithm")
+
+    choice = input("\nEnter your choice (A/B/C): ").strip().upper()
+
+    # Option A: drop columns
+    if choice == "A":
+        print(f"\nRemoving columns: {nan_cols}")
+        return df.drop(columns=nan_cols)
+
+    # Option B: drop rows
+    elif choice == "B":
+        print("\nRemoving rows containing NaN in numeric columns")
+        return df.dropna(subset=numeric_cols)
+
+    # Option C: abort
+    elif choice == "C":
+        raise ValueError(
+            f"Regression aborted because numeric columns contain NaN: {nan_cols}"
+        )
+
+    else:
+        raise ValueError("Invalid choice. Expected A, B, or C.")
+    
+
 def collapse_rare_categories(df, max_levels=1000):
     df = df.copy()
     cat_cols = df.select_dtypes(include=["object", "category"]).columns #Prende le colonne
 
     for col in cat_cols:
-        
-        #Introduce a special categorywhere data is missing simil to ctr23 pipeline
+
+        # Ensure "__MISSING__" is a valid category if column is categorical
+        if isinstance(df[col].dtype, pd.CategoricalDtype):
+            if "__MISSING__" not in df[col].cat.categories:
+                df[col] = df[col].cat.add_categories(["__MISSING__"])
+                    
+        # Introduce a special category where data is missing simil to ctr23 pipeline
         df[col] = df[col].fillna("__MISSING__")
         
         counts = df[col].value_counts()
@@ -175,22 +232,25 @@ def drop_col_with_no_uniques(df):
 def load_preprocess_split(task_id):
     
     # Load dataset
-    df_raw, target_name, dataset_info = load_dataset_from_task(task_id)
+    df, target_name, dataset_info = load_dataset_from_task(task_id)
 
     # Drop columns with 1 categorical levels
-    df_raw = drop_col_with_no_uniques(df_raw)
+    df = drop_col_with_no_uniques(df)
+
+    # Abort or clean numeric NaN before any preprocessing
+    df = handle_numeric_nan(df)
 
     # Preprocess CTR23-style
-    df_encoded, original_cat_cols = preprocess_ctr23_style(df_raw)
+    df, original_cat_cols = preprocess_ctr23_style(df)
 
     # Move target to last column (your optimized idea)
-    df_encoded = move_target_last(df_encoded, target_name)
+    df = move_target_last(df, target_name)
 
     # Generate unique_list
-    unique_list = generate_unique_list(df_encoded, original_cat_cols)
+    unique_list = generate_unique_list(df, original_cat_cols)
 
     # Split e convert
-    train_arr, val_arr, test_arr = split_convert_dataset(df_encoded)
+    train_arr, val_arr, test_arr = split_convert_dataset(df)
 
     return train_arr, val_arr, test_arr, unique_list, dataset_info
 
@@ -240,7 +300,7 @@ def generate_configurations(unique_list):
     return configs
 
 
-def regression_test(df_train, df_val, df_test, configurations):
+def regression_test(df_train, df_val, df_test, configurations, n_of_sets=None, print_pivots_debug=False):
     """
     Test all 8 configuration for regression task solved by De Simone Inference
     """
@@ -253,7 +313,9 @@ def regression_test(df_train, df_val, df_test, configurations):
         model = dsi.DSregressor(**config)
         gt, fst, sst, mtt = model.fit_cross_validation(df_train,
                                                        df_val,
-                                                       domains_functions_list=config["default_division"])
+                                                       n_of_sets=n_of_sets,
+                                                       domains_functions_list=config["default_division"],
+                                                       print_pivots_debug=print_pivots_debug)
 
         # --- Predizione ---
         y_out = model.predict(df_test[:, :-1])
@@ -321,7 +383,7 @@ def results_to_latex_table(results, df_info):
 
     # Adding info
     latex += (
-        f"\\caption {{{name_for_title}; Size ${rows} \\times {cols} $;Categorical. Col. {n_cat}}}\n"
+        f"\\caption {{{name_for_title}; Size ${rows} \\times {cols} $; Categorical. Col. {n_cat}}}\n"
         f"\\label{{tab:{name}}}\n"
     )
 
@@ -370,20 +432,25 @@ def results_to_latex_table(results, df_info):
 
 # Final routine
 #==========================================================================
-def scoring_routine(task_id, print_table = True):
+def scoring_routine(task_id, print_table = True, n_of_sets=None, print_pivots_debug=False):
     """
     The whole scoring routines, outputs scoring results and separatey dataset info dict
+    
     parameters
     ----------
     task_id_ int
         Id given is used to provide datasate on which coring routine is performed
     print_table: Bool, optional
+        Enabe (disable) automaic Latex print.
+    n_of_sets_override: int or array like
+        Ovverrides the initial number of sets per feature.
     """
     df_train, df_val, df_test, unique_list, df_info = load_preprocess_split(task_id)
     configs = generate_configurations(unique_list)
     df_info["n_of_cat_features"] = np.asarray(unique_list).sum() 
     
-    results = regression_test(df_train, df_val, df_test, configs)
+    results = regression_test(df_train, df_val, df_test, configs,
+                              n_of_sets=n_of_sets, print_pivots_debug=print_pivots_debug)
 
     if print_table:
         print(LINES_SEPARATOR+"\n")

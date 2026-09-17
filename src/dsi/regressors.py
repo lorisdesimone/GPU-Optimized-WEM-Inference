@@ -60,7 +60,7 @@ class DSregressor:
         self.default_n_of_sets = default_n_of_sets
         self.min_number_of_sets = min_number_of_sets
         
-    def _build_fuzzy_tensor(self, X, build_pivots):
+    def _build_fuzzy_tensor(self, X, build_pivots, print_pivots_debug = False):
         """
         Compute the fuzzy membership tensor for the dataset X.
     
@@ -76,6 +76,8 @@ class DSregressor:
         build_pivots : bool
             If True, compute and store pivots for each feature.
             If False, reuse previously stored pivots.
+        print_pivots_debug : bool, optional
+            If True, prints out the pivots result from building for debug purposes
     
         Returns
         -------
@@ -104,6 +106,8 @@ class DSregressor:
                 # Pivots are built from X dataframe
                 pivots = self.domains_functions[r](arr, int(self.n_of_sets[r]))
                 self.pivots.append(pivots)
+                if print_pivots_debug:
+                    print(f"-> DEBUG <-: {r}-th Pivots built: {pivots}")
             else:
                 # Pivots are retrived from object memory
                 pivots = self.pivots[r]
@@ -385,6 +389,7 @@ class DSregressor:
         train_df,
         domains_functions_list=None,
         n_of_sets=None,
+        print_pivots_debug = False,
         _skip_validate=False):
         """
         Fit the WEMDS model on the training dataset.
@@ -449,7 +454,7 @@ class DSregressor:
             self._validate_n_of_sets(n_of_sets, n_columns)
 
         #Pivots building
-        FT = self._build_fuzzy_tensor(train_df, True)  # Fuzzy tensor
+        FT = self._build_fuzzy_tensor(train_df, True, print_pivots_debug = print_pivots_debug)  # Fuzzy tensor
 
         #Y_centers retriving
         self.y_centers = self.pivots[-1][1:-1]
@@ -512,7 +517,8 @@ class DSregressor:
                              domains_functions_list=None,
                              n_of_sets=None,
                              test="r2",
-                             print_log=True):
+                             print_log=True,
+                             print_pivots_debug=False):
         """
         Optimize the number of fuzzy sets per feature using a greedy
         coordinate-wise search over the validation set.
@@ -594,6 +600,7 @@ class DSregressor:
         self.fit(df_train,
                 domains_functions_list=domains_functions_list,
                 n_of_sets=n_of_sets,
+                print_pivots_debug=print_pivots_debug
                 )
         
         end = time.time()
