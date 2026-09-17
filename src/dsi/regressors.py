@@ -454,10 +454,10 @@ class DSregressor:
             self._validate_n_of_sets(n_of_sets, n_columns)
 
         #Pivots building
-        FT = self._build_fuzzy_tensor(train_df, True, print_pivots_debug = print_pivots_debug)  # Fuzzy tensor
+        FT = self._build_fuzzy_tensor(train_df, True, print_pivots_debug = print_pivots_debug)  # Fuzzy tensor (R, N, P_max)
 
         #Y_centers retriving
-        self.y_centers = self.pivots[-1][1:-1]
+        self.y_centers = self.pivots[-1][1:-1] 
         
         F = xp.max(FT, axis=2).T                       # Fires matrix
         
