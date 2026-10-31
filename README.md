@@ -1,13 +1,10 @@
-# DSInference
-De Simone Inference: CUDA-accelerated fuzzy regression engine.
+# GPU Optimized Wang & Mendel Rule Induction with Inference.
 
-This repository contains the reference implementation of the DSRegressor
+This repository contains the reference implementation of the GOWM
 method presented in the publication:
 
-**De Simone Inference: A GPU-accelerated tensor-based extension of
-the Wang & Mendel fuzzy rule generation method with density-based
-domain division, probabilistic conflict resolution, hybrid Sugeno
-inference, and two-step self-optimization.**  
+**A GPU-Accelerated Tensor Extension of the Wang--Mendel Method
+with Density Partitioning, Self-Optimization and Architectural Variants**  
 *Loris De Simone, September 2026*
 
 ## Environment Setup
