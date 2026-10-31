@@ -7,6 +7,10 @@ method presented in the publication:
 with Density Partitioning, Self-Optimization and Architectural Variants**  
 *Loris De Simone, September 2026*
 
+The regression framework presented in the paper is implemented as the 
+DSRegressor class inside the dsi module (originally designated 
+De Simone Inference during initial development).
+
 ## Environment Setup
 
 To run this project, the following system requirements must be installed manually:
@@ -53,8 +57,9 @@ Install the required dependencies running inside the environment:
 pip install -r requirements.txt
 ```
 
-This project uses the modern src layout, meaning that the actual Python package lives inside the src/ directory.
-Because of this, Python will not automatically discover the package unless it is installed.
+This project uses the modern src layout, meaning that the actual 
+Python package lives inside the src/ directory. Because of this, 
+Python will not automatically discover the package unless it is installed.
 
 To make the package importable during development, you must install it in editable mode:
 
