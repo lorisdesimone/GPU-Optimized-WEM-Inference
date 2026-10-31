@@ -8,7 +8,7 @@ with Density Partitioning, Self-Optimization and Architectural Variants**
 *Loris De Simone, September 2026*
 
 The regression framework presented in the paper is implemented as the 
-DSRegressor class inside the dsi module (originally designated 
+_DSRegressor class_ inside the _dsi_ module (originally designated 
 De Simone Inference during initial development).
 
 ## Environment Setup
