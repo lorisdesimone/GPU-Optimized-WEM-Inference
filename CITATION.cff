@@ -1,0 +1,10 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+- family-names: "Loris"
+  given-names: "De Simone"
+  orcid: "https://orcid.org/0009-0005-6349-4962"
+title: "GPU Optimized Wang & Mendel Rule Induction with Inference."
+version: 1.0.0
+date-released: 2026
+url: "https://github.com/lorisdesimone/GPU-Optimized-WEM-Inference"
